@@ -11,8 +11,11 @@
         - cd server
         - node app.mjs
 
-4. In client/memoryMap folder, install react-router-dom
+4. In client/memoryMap folder, install react-router-dom, install tailwindcss, install axios(for calling our api endpoints)
     - npm install react-router-dom
+    - npm install axios
+    - npm install tailwindcss @tailwindcss/vite
+    - Specific steps for installing tailwindcss: https://tailwindcss.com/docs/installation/using-vite
 5. In server folder, initialize a Node.js project, express, mongoose, dotenv, nodemon
     - npm init -y
     - npm install express mongoose cors dotenv nodemon

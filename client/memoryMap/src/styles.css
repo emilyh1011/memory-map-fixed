@@ -1,0 +1,8 @@
+@import "tailwindcss";
+
+/*Sizing of map container*/
+/*By default, className for MapContainer is leaflet-container*/
+.leaflet-container{
+    height: 100vh;
+    width: 100vw;
+}
