@@ -1,7 +1,7 @@
-import { useState } from 'react';
+import { useState, memo } from 'react';
 import axios from 'axios';
 
-function StructuredSearch() {
+const StructuredSearch = memo(function StructuredSearch({activeSearchResult, handleActiveSearchResult}) {
 
     const [street, setStreet] = useState("");
     const [city, setCity] = useState("");
@@ -10,7 +10,7 @@ function StructuredSearch() {
     const [country, setCountry] = useState("");
     const [postalcode, setPostalcode] = useState("");
     const [results, setResults] = useState([]);
-
+    
     function handleStructuredSearch(e){
         e.preventDefault();
         axios.get("http://localhost:3000/search-bar", {params: {street, city, county, state, country, postalcode}}).then((response)=>{
@@ -53,11 +53,17 @@ function StructuredSearch() {
             </form>
             <div className="flex flex-col justify-center w-md mt-[5px]">
                 {results.map((result) => {
-                    return <div className="bg-white w-full rounded-md p-[4px] pl-[8px]">{result.display_name}</div>
+                    return <div 
+                        key = {result.place_id}
+                        onClick={()=>{
+                            handleActiveSearchResult(result);
+                        }}
+                        className = {`w-full rounded-md p-[4px] pl-[8px] hover:bg-gray-100 ${activeSearchResult && activeSearchResult.place_id == result.place_id? "bg-gray-200": "bg-white"}`}
+                        >{result.display_name}</div>
                 })}
             </div>
         </>
     )
-}
+});
 
 export default StructuredSearch

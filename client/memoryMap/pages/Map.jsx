@@ -1,5 +1,5 @@
-import { MapContainer, TileLayer, useMapEvents } from 'react-leaflet';
-import { useState } from 'react';
+import { MapContainer, TileLayer} from 'react-leaflet';
+import { useRef, useState, useCallback } from 'react';
 import SimpleSearch from '../components/SimpleSearch';
 import StructuredSearch from '../components/StructuredSearch'
 import "../src/styles.css";
@@ -7,19 +7,31 @@ import 'leaflet/dist/leaflet.css';
 
 function Map() {
 
-    // const map = useMapEvents({
-    //     click: ()=>{
-    //         map.locate();
-    //     }
-    // })
+    const mapRef = useRef(null);
+    console.log(mapRef);
 
     //By default, we display the simpleSearch
     const [isSimpleSearch, setIsSimpleSearch] = useState(true);
 
+    //This will keep track of which search result the user selects. This will also be passed back up into the parent Map.jsx
+    const [activeSearchResult, setActiveSearchResult] = useState(null); 
+
+    //For react-leaflet, their methods accept points. Easiest way: [latitude, longitude]
+    const [position, setPosition] = useState([]);
+
+    //When we want to update the activeSearchResult state from the child components, we will call this callback 
+    //function that is defined here in our parent Map.jsx.
+    const handleActiveSearchResult = useCallback((r)=>{
+        setActiveSearchResult(r);
+        //console.log("this is my activeSearchResult passed back to Map.jsx", r);
+        //setPosition([r.lat, r.lon]); **Lines 27 & 28 is just testing code.**
+        //mapRef.current.flyTo([r.lat, r.lon], mapRef.current.getZoom());
+    }, [])
+
     return (
         <>
 
-            <MapContainer center={[40.776676, -73.971321]} zoom={13} className="relative z-0">
+            <MapContainer ref = {mapRef} center={[40.776676, -73.971321]} zoom={13} className="relative z-0">
                 <TileLayer
                     attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
                     url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
@@ -56,8 +68,7 @@ function Map() {
             </div>
 
             <div className="fixed top-20 left-5 z-500">
-                {isSimpleSearch? <SimpleSearch/> : <StructuredSearch/>}
-                
+                {isSimpleSearch? <SimpleSearch activeSearchResult = {activeSearchResult} handleActiveSearchResult = {handleActiveSearchResult}/> : <StructuredSearch activeSearchResult={activeSearchResult} handleActiveSearchResult={handleActiveSearchResult}/>} 
             </div>
         </>
     )

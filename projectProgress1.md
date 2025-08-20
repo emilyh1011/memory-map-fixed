@@ -1,4 +1,4 @@
-Commit 2: Initialize Map, Nominatim Search Functionality
+Commit 2: Initialize Map, Initialize Nominatim Search Functionality
 
 1. Initialize our map
     - MapContainer: center our map in Manhattan, NYC

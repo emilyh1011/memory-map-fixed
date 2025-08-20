@@ -1,8 +1,8 @@
-import { useState } from 'react'
+import { useState, memo } from 'react'
 import { FaSearch } from "react-icons/fa";
 import axios from 'axios';
 
-function SimpleSearch() {
+const SimpleSearch = memo(function SimpleSearch({activeSearchResult, handleActiveSearchResult}) {
 
     const [simpleQuery, setSimpleQuery] = useState("");
     const [results, setResults] = useState([]);
@@ -41,13 +41,19 @@ function SimpleSearch() {
             {/**Display results vertically, flex-col
             * w-full, so same as parent. We want the results to be same width as search bar
             */}
-            <div className="flex flex-col justify-center w-md">
+            <div className="flex flex-col justify-center w-md mt-[5px]">
                 {results.map((result) => {
-                    return <div className="bg-white w-full rounded-md p-[4px] pl-[8px]">{result.display_name}</div>
+                    return <div 
+                        key = {result.place_id}
+                        onClick={()=>{
+                            handleActiveSearchResult(result);
+                        }}
+                        className = {`w-full rounded-md p-[4px] pl-[8px] hover:bg-gray-100 ${activeSearchResult && activeSearchResult.place_id == result.place_id? "bg-gray-200": "bg-white"}`}
+                        >{result.display_name}</div>
                 })}
             </div>
         </>
     )
-}
+});
 
 export default SimpleSearch;
