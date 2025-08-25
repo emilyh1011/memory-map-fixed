@@ -88,7 +88,7 @@ export default Map;
         import { FaSearch } from "react-icons/fa";
         import axios from 'axios';
         const [simpleQuery, setSimpleQuery] = useState("");
-        const [results, setResults] = useState([]);
+        const [results, setResults] = useState([]); //In next projectProgress, we will move defining results as a state from the parent Map.jsx instead
 
     - Create our form UI & search results UI
         <form className="flex flex-row bg-white items-center w-md h-[60px] rounded-md shadow-md shadow-gray-700 pl-[8px]"
@@ -124,12 +124,16 @@ export default Map;
     - GET /search-bar: returns an array of search results from the nominatim API based on our simpleQuery
     
         async function handleSearch(e) {
-            e.preventDefault(); 
-            axios.get("http://localhost:3000/search-bar", { params: { simpleQuery } }).then((response) => {
-                setResults(response.data);
-            }).catch((err) => {
-                console.log(err);
-            })
+            e.preventDefault(); //Prevent default action of page reloading after form submission
+
+            //Only let search go through if user didn't submit just spaces or an empty string search,
+            if (simpleQuery.trim() !== "") {
+                axios.get("http://localhost:3000/search-bar", { params: { simpleQuery } }).then((response) => {
+                    setResults(response.data);
+                }).catch((err) => {
+                    console.log(err);
+                })
+            }
         }
 
 
