@@ -2,12 +2,16 @@ import { MapContainer, TileLayer, Marker, Popup} from 'react-leaflet';
 import { useRef, useState, useCallback, useEffect} from 'react';
 import SimpleSearch from '../components/SimpleSearch';
 import StructuredSearch from '../components/StructuredSearch'
+
+import ResultAddSpaceMessage from '../components/ResultAddSpaceMessage';
+import AddNamePopup from '../components/AddNamePopup';
+import AddSpacePopup from '../components/AddSpacePopup';
+
 import "../src/styles.css";
 import 'leaflet/dist/leaflet.css';
 import axios from 'axios';
 import pin from '../src/assets/pin.png';
 import {Icon} from 'leaflet'
-import { IoIosCloseCircle } from "react-icons/io";
 
 function Map() {
 
@@ -33,6 +37,10 @@ function Map() {
         iconSize: [38,38],
         attribution: <a href="https://www.flaticon.com/free-icons/location" title="location icons">Location icons created by Vitaly Gorbachev - Flaticon</a>
     });
+
+    const [userInputName, setUserInputName] = useState(""); //If user needs to add a name for an empty string activeSearchResult.name
+    const [askLocationName, setAskLocationName] = useState(false); //Keeps track of if we need to display/hide the UI for asking for a location name
+    
 
     //We will call fetchSpaces once on mount and also whenever we add a new space
     function fetchSpaces() {
@@ -71,25 +79,29 @@ function Map() {
        return isInSpaces; 
     }
 
-    function handleAddSpace(){
-        
+    const handleAddSpace = useCallback(()=>{
         axios.post("http://localhost:3000/addSpace", {
             display_name: activeSearchResult.display_name,
-            name: activeSearchResult.name,
+            name: activeSearchResult.name || userInputName.trim(),
             latitude: activeSearchResultPosition[0],
             longitude: activeSearchResultPosition[1],
             place_id: activeSearchResult.place_id,
             type: activeSearchResult.type,
             lastVisited: null
-         }).then((response)=>{
-            setActiveSearchResult(null);//Stop displaying popup and preview marker
-            setActiveSearchResultPosition(null); 
-            setResults([]);            //Stop displaying search results. Intuitively, no longer searching, added a space, so reset activeSearchResult user flow.
-            setCloseAddSpaceMessage(false); //Reset previous user's choice to close addSpace message
+        }).then((response) => {
+            setActiveSearchResult(null);
+            setActiveSearchResultPosition(null);
+            setResults([]);
+
+            setCloseAddSpaceMessage(false);
+
+            setAskLocationName(false);
+            setUserInputName("");
+
             setAddSpaceMessage(response.data);
-            fetchSpaces();  //Re-render the markers by fetching our spaces collection
+            fetchSpaces();
         })
-    }
+    }, [activeSearchResult, userInputName, activeSearchResultPosition, fetchSpaces]);
 
 
     return (
@@ -107,53 +119,27 @@ function Map() {
                 })}
 
                 {/**User selected a search result && the search result isn't already a space.
-                 * Conditionally render a clear marker that asks user if they want to add a space here*/}
-                {(activeSearchResult && !checkLocationInSpaces())?
+                 * AddSpace Popup with a Preview Marker*/}
+                {(activeSearchResult && !checkLocationInSpaces() && !askLocationName)?
+                        <>
+                            <Marker position={activeSearchResultPosition} icon = {previewIcon}></Marker>
 
-                    <div className = "relative z-[500] w-full h-full flex items-center">
+                            <AddSpacePopup activeSearchResult = {activeSearchResult} setAskLocationName={setAskLocationName} setActiveSearchResult={setActiveSearchResult} handleAddSpace={handleAddSpace}/>
+                    
+                        </>
                         
-                        <Marker position={activeSearchResultPosition} icon = {previewIcon}></Marker>
-                           
-                         <div className = "absolute right-1/8 z-[500] flex flex-col justify-center items-center gap-5 bg-white p-7 rounded-lg border-[2px] w-1/4">
-                            <span className = "text-[15px]">Do you want to add a space at {activeSearchResult.name || activeSearchResult.display_name}?</span>
-                            <button 
-                                onClick={()=>{
-                                    handleAddSpace();
-                                }}
-                                className = "w-full text-[15px] p-2 rounded-lg bg-green-200 hover:border-[1px] border-sky-200 active:bg-green-300">Yes</button>
-                            <button 
-                                onClick={()=>{
-                                    setActiveSearchResult(null); //Reset activeSearchResult, restarts user flow.
-                                                                //Don't reset results because user might've meant to click on a different location
-                                }}
-                                className = "w-full text-[15px] p-2 rounded-lg bg-red-200 hover:border-[1px] border-sky-200 active:bg-red-300">No</button>
-                         </div>
-                    </div> 
                     : null
                 }
 
+                {/**AddName Popup */}
+                {askLocationName? 
+                    <AddNamePopup userInputName = {userInputName} setUserInputName={setUserInputName} handleAddSpace={handleAddSpace}/>: null
+                }
+
+                {/**The error/success message after use tries to add a space.*/}
                 {addSpaceMessage && !closeAddSpaceMessage ? 
-                    <div className = "relative z-[500] w-full h-full flex items-center">
-                        <div className = "absolute right-1/8 z-[500] flex flex-col justify-center bg-sky-200 rounded-lg border-[2px] w-1/5 p-2">
-                            <IoIosCloseCircle className = "text-[20px] text-red-400"
-                                onClick={()=>{
-                                    setCloseAddSpaceMessage(true);
-                                }}/>
-                        {addSpaceMessage.success?
-                            <div className ="flex flex-col items-center p-4 gap-4 w-full bg-white rounded-lg border-[2px]">
-                                <h1 className = "text-[22px] text-sky-400 ">Success</h1>
-                                <span className = "text-[15px]">{addSpaceMessage.success}</span>
-                            </div>: 
-                            
-                            <div className = "flex flex-col items-center p-4 gap-4 w-full bg-white rounded-lg border-[2px] border-[2px]">
-                                <h1 className = "text-[22px] text-red-400">Error</h1>
-                                <span className = "text-[15px]">{addSpaceMessage.error}</span>
-                            </div>
-                            
-                        }
-                        </div>
-                    </div>
-                : null}            
+                    <ResultAddSpaceMessage addSpaceMessage= {addSpaceMessage} setCloseAddSpaceMessage={setCloseAddSpaceMessage}/> : null
+                }    
 
             </MapContainer>
 
@@ -184,7 +170,7 @@ function Map() {
                 </div>
             </div>
 
-            <div className="fixed top-20 left-5 z-500">
+            <div className="fixed top-20 left-5 z-[500]">
                 {isSimpleSearch? 
                     <SimpleSearch activeSearchResult = {activeSearchResult} 
                         handleActiveSearchResult = {handleActiveSearchResult} 
@@ -208,3 +194,4 @@ export default Map;
 //Space: memories, lastVisited
 // Memory: feeling, description, pictures
 //Feeling options: joy, ache, accepted, love, alive, nostalgic/the feeling that u know u will miss this moment
+

@@ -6,3 +6,9 @@
     height: 100vh;
     width: 100vw;
 }
+
+:root{
+    font-size: 16px; /*1 rem = 4px*/
+                    /*Tailwind styling numbers is based off of 0.25rem. Ex: p-1 = 1 rem * 0.25 = 16px * 0.25 = padding 4px, p-2 = 2 rem * 0.25 = 32px * 0.25 = padding 8px*/
+                    /*(Tailwind Styling Number * 16px) / 4 = px */
+}
