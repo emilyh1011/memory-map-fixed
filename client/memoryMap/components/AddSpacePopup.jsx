@@ -13,13 +13,13 @@ const AddSpacePopup = memo(function ({ activeSearchResult, setAskLocationName, s
                             handleAddSpace();
                         }
                     }}
-                    className="w-full text-[15px] p-2 rounded-lg bg-green-200 hover:border-[1px] border-sky-200 active:bg-green-300">Yes</button>
+                    className="w-full text-[15px] p-2 rounded-lg bg-green-200 hover:border-[1px] border-sky-200 cursor-pointer active:bg-green-300">Yes</button>
                 <button
                     onClick={() => {
                         setActiveSearchResult(null); //Reset activeSearchResult, restarts user flow.
                         //Don't reset results because user might've meant to click on a different location
                     }}
-                    className="w-full text-[15px] p-2 rounded-lg bg-red-200 hover:border-[1px] border-sky-200 active:bg-red-300">No</button>
+                    className="w-full text-[15px] p-2 rounded-lg bg-red-200 hover:border-[1px] border-sky-200 cursor-pointer active:bg-red-300">No</button>
             </div>
         </div>
     )

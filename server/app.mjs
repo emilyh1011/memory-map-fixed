@@ -4,7 +4,10 @@ import cors from 'cors';
 import dotenv from "dotenv"
 import path from 'path'
 import { fileURLToPath, URLSearchParams } from 'url';
-import { Space } from './db.mjs';
+import { Space, Memory } from './db.mjs';
+import multer from 'multer';
+const upload = multer({ dest: 'uploads/' }) 
+import {v2 as cloudinary} from 'cloudinary'; 
 
 const app = express();
 const __filename = fileURLToPath(import.meta.url);
@@ -31,7 +34,7 @@ app.get("/getAllSpaces", async (req, res) => {
                 lastVisited: {
                     $dateToString: {
                         format: "%B %d, %Y %H:%M",
-                        date: "$createdAt"
+                        date: "$lastVisited"
                     },
                 },
             }
@@ -107,6 +110,119 @@ app.get("/search-bar", async (req, res) => {
     }
 
 })
+
+app.get("/getAllMemories", async (req, res) => {
+
+    const memories = await Memory.aggregate([
+        {
+            $match: { spaceId: new mongoose.Types.ObjectId(`${req.query.spaceId}`) }
+        },
+        {
+            $project: {
+                title: 1,
+                feeling: 1,
+                memoryDate: {
+                    $dateToString: {
+                        format: "%B %d, %Y",
+                        date: "$memoryDate"
+                    },
+                },
+                description: 1,
+                images: 1,
+                spaceId: 1,
+            }
+        }]
+    );
+    console.log("in backend, all my memories: ", memories);
+    res.json(memories);
+})
+
+//Add in extra middleware.
+app.post("/addMemory", upload.array("images"), async(req,res)=>{
+    
+    console.log("in backend, my body, text fields according to multer ", req.body);
+    console.log("in backend, my files, file fields according to multer", req.files); 
+    
+    cloudinary.config({
+        cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
+        api_key: process.env.CLOUDINARY_API_KEY,
+        api_secret: process.env.CLOUDINARY_API_SECRET
+    });
+
+
+    let imageResults = [];
+   
+    //Iterate through our images array, and upload all our images to cloudinary
+    for (let i = 0; i< req.files.length; i++){
+        const result = await cloudinary.uploader.upload(req.files[i].path).catch((error) => {
+           console.log(error);
+       });; 
+
+       console.log("image index ", i, ": ", result);
+       imageResults.push(result.secure_url); //Only add the Cloudinary secure urls to our results array that will be saved to mongodb
+    }
+
+    console.log("cloudinary upload ", imageResults);
+
+
+    //Update lastVisited field of the space document that this new memory will refer to 
+    const correspondingSpace = await Space.findById(req.body.spaceId);
+
+    console.log("my corresponding space before", correspondingSpace);
+   
+    // space.lastVisited is null(falsy) --> first memory we are adding, update correspondingSpace.lastVisited
+    // New memory date is more recent --> update correspondingSpace.lastVisited
+    if (!correspondingSpace.lastVisited || new Date(req.body.memoryDate) > correspondingSpace.lastVisited) {
+        correspondingSpace.lastVisited = new Date(req.body.memoryDate);
+        await correspondingSpace.save(); //update our correspondingSpace.lastVisited field
+        console.log("my corresponding space after update lastVisited", correspondingSpace);
+    }
+
+   
+    const newMemory = new Memory({
+        title: req.body.title,
+        feeling: req.body.feeling,
+        memoryDate: new Date(req.body.memoryDate),
+        description: req.body.description,
+        images: imageResults,
+        spaceId: new mongoose.Types.ObjectId(`${req.body.spaceId}`),
+    });
+
+    console.log("this is our newMemory", newMemory);
+
+    try{
+        await newMemory.save();
+        res.json({success: `Check out your new memory at space ${correspondingSpace.name}!`})
+    }catch(err){
+        res.json({error: "Failed to add memory. Try again later."});
+    }
+})
+
+app.get("/getSpace", async (req, res)=>{
+    const space = await Space.aggregate([
+        {
+            $match: {_id: new mongoose.Types.ObjectId(`${req.query.spaceId}`)}
+        },
+        {
+            $project: {
+                display_name: 1,
+                name: 1,
+                latitude: 1,
+                longitude: 1,
+                place_id: 1,
+                type: 1,
+                lastVisited: {
+                    $dateToString: {
+                        format: "%B %d, %Y %H:%M",
+                        date: "$lastVisited"
+                    },
+                },
+            }
+        }]
+    );
+    console.log("my 1 space from backend, ", space[0]); //aggregate pipeline returns an array of results. We will get an array of 1 document.
+    res.json(space[0]);
+});
 
 console.log(process.env.PORT);
 //Right now, while we are developing, start server at port 3000

@@ -22,6 +22,17 @@ const SpaceSchema = new mongoose.Schema({
 
 const Space = new mongoose.model("Space", SpaceSchema); 
 
+const MemorySchema = new mongoose.Schema({
+    title: {type: String, required: true},
+    feeling: {type: String, required: true},
+    memoryDate: {type: Date, required: true},
+    description: {type: String, required: true},
+    images: {type: Array},
+    spaceId: { type: mongoose.Schema.Types.ObjectId, ref: "Space", required: true } // Reference the _id field of its corresponding Space document
+});
+
+const Memory = new mongoose.model("Memory", MemorySchema);
+
 export{
-   Space
+   Space, Memory
 }

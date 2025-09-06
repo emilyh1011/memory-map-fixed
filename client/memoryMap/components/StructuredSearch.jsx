@@ -31,7 +31,7 @@ const StructuredSearch = memo(function StructuredSearch({activeSearchResult, han
     return (
         <>
             <form className="flex flex-row gap-2 items-center">
-                <div className="flex flex-col bg-white justify-center h-[60px] rounded-m d shadow-md shadow-gray-700 pl-[8px]">
+                <div className="flex flex-col bg-white justify-center h-[60px] rounded-md shadow-md shadow-gray-700 pl-[8px]">
                     <input type="text" value={street} placeholder="House Number/Street" 
                         onChange={(event) => { setStreet(event.target.value) }}
                         onFocus={()=>{setIsSearchBarFocused(true) }}

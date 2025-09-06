@@ -1,11 +1,12 @@
 import { IoIosCloseCircle } from "react-icons/io";
+
 function ResultAddSpaceMessage({addSpaceMessage, setCloseAddSpaceMessage}) {
 
     return(
        
             <div className="relative z-[500] w-full h-full flex items-center">
                 <div className="absolute right-1/8 z-[500] flex flex-col justify-center bg-sky-200 rounded-lg border-[2px] w-1/5 p-2">
-                    <IoIosCloseCircle className="text-[20px] text-red-400"
+                    <IoIosCloseCircle className="text-[20px] text-red-400 hover:cursor-pointer"
                         onClick={() => {
                             setCloseAddSpaceMessage(true);
                         }} />
