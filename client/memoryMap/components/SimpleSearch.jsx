@@ -1,4 +1,4 @@
-import { useState, memo } from 'react'
+import { useState, memo, useEffect } from 'react'
 import { FaSearch } from "react-icons/fa";
 import axios from 'axios';
 
@@ -7,6 +7,11 @@ const SimpleSearch = memo(function SimpleSearch({activeSearchResult, handleActiv
     const [simpleQuery, setSimpleQuery] = useState("");
     const [isSearchBarFocused, setIsSearchBarFocused] = useState(false); //New state to track when to hide the results bar. Hide the results bar only when a user clicks out of search bar(not focused) and when a user activates a search result(activeSearchResult exists)
 
+    //On choosing SimpleSearch, reset any possible previous activeSearchResult and searchResults from StructuredSearch
+    useEffect(()=>{
+        setActiveSearchResult()
+        setResults([]);
+    },[]);
 
     async function handleSearch(e) {
 

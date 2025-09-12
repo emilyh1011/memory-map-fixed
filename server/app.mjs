@@ -117,6 +117,7 @@ app.get("/getAllMemories", async (req, res) => {
         {
             $match: { spaceId: new mongoose.Types.ObjectId(`${req.query.spaceId}`) }
         },
+        { $sort: { memoryDate: -1 } },
         {
             $project: {
                 title: 1,
@@ -213,7 +214,7 @@ app.get("/getSpace", async (req, res)=>{
                 type: 1,
                 lastVisited: {
                     $dateToString: {
-                        format: "%B %d, %Y %H:%M",
+                        format: "%B %d, %Y",
                         date: "$lastVisited"
                     },
                 },

@@ -24,7 +24,7 @@ Commit 6: Clicking on a Space Marker and rendering a Space sidebar to add memori
     }
 
 2. Map.jsx: Create our SpacePopup
-- # 2a. Define space popup states
+- # 2a. Map.jsx: Define space popup states
     - selectedSpace: Stores our selected space, the space marker that was clicked on.
     - closeSpacePopup: Controls the rendering of our Space Popup. Initialized to false and every time a user clicks on a marker, we will reset the closeSpacePopup state to false.
     - memories: When a user selects a space, this will store all our memories for that space in this array.
@@ -74,7 +74,7 @@ Commit 6: Clicking on a Space Marker and rendering a Space sidebar to add memori
         res.json(memories);
     })
 
-- # 2c. client/Map.jsx: Write our fetchMemories() function
+- # 2c. Map.jsx: Write our fetchMemories() function
 - Calls our GET "/getAllMemories" endpoint
 
     function fetchMemories(spaceId){
@@ -85,7 +85,7 @@ Commit 6: Clicking on a Space Marker and rendering a Space sidebar to add memori
         })
     }
 
-- # 2d. Update our rendering Marker logic.
+- # 2d. Map.jsx: Update our rendering Marker logic.
 - eventHandlers prop: This allows us to add some javascript logic on certain events done on our Space Marker.
     - click: Start our SpacePopup user flow.
         - Pan the screen to our selected space.
@@ -110,7 +110,7 @@ Commit 6: Clicking on a Space Marker and rendering a Space sidebar to add memori
                 )
             })}
 
-- # 2e: Define our AddMemory form states & import our necessary AddSpacePopup icons
+- # 2e: Map.jsx: Define our AddMemory form states & import our necessary AddSpacePopup icons
 - Icons Source: https://react-icons.github.io/react-icons/search/#q=add 
 - MdAddCircleOutline: In our Space Popup, a user will be able to click on a plus button to render an AddMemory Form
 - IoIosCloseCircle : To close our Space Popup. This will set our closeSpacePopup to true.
@@ -119,6 +119,7 @@ Commit 6: Clicking on a Space Marker and rendering a Space sidebar to add memori
 
     import { IoIosCloseCircle } from "react-icons/io";
     import { MdAddCircleOutline } from "react-icons/md";
+    import { IoIosRemoveCircleOutline } from "react-icons/io";
 
     const [showAddMemory, setShowAddMemory] = useState(false); 
     const [addMemoryTitle, setAddMemoryTitle] = useState("");
@@ -129,7 +130,7 @@ Commit 6: Clicking on a Space Marker and rendering a Space sidebar to add memori
     
     const feelings = ["joy", "ache", "longing", "accepted", "nostalgic", "alive"];
 
-- # 2f: Render our Space Popup
+- # 2f: Map.jsx: Render our Space Popup in <MapContainer>
 - Conditionally render when our selectedSpace exists(a marker is selected by the user) and closeSpacePopup is false
 - onClick X Button: Stop rendering our SpacePopup and reset our SpacePopup user flow.
     - Close SpacePopup
@@ -144,6 +145,7 @@ Commit 6: Clicking on a Space Marker and rendering a Space sidebar to add memori
         - If lastVisited is "truthy"(not null), then that means we added at least 1 memory, so there's a valid date saved for lastVisited. We'll display an actual saved date for the lastVisited 
         - If lastVisited is "falsy"(null), then we'll display a message for that field, informing the user to add a memory.
     - onClick Add Button: Render our AddMemory form by setting the state variable showAddMemory to true.
+    - onClick Remove Button: Remove our AddMemory form by setting the state variable showAddMemory to false and reseting add memory form fields.
 
     {(selectedSpace && !closeSpacePopup) ?
     <div className="relative z-[500] flex w-full h-full" >
@@ -177,8 +179,16 @@ Commit 6: Clicking on a Space Marker and rendering a Space sidebar to add memori
                     <span className="text-[15px]">
                         Last Visited: {selectedSpace.lastVisited ? selectedSpace.lastVisited : `N/A, add a memory!`}
                     </span>
-                    <MdAddCircleOutline className="text-[20px] text-sky-400 font-semibold hover:cursor-pointer"
-                        onClick={()=>{setShowAddMemory(true)}}/>
+                    <MdAddCircleOutline className={`text-[20px] text-sky-400 font-semibold hover:cursor-pointer ${showAddMemory ? 'hidden' : ''}`}
+                        onClick={() => { setShowAddMemory(true) }} />
+                    <IoIosRemoveCircleOutline className={`text-[20px] text-sky-400 font-semibold hover:cursor-pointer ${showAddMemory ? '' : 'hidden'}`}
+                        onClick={() => {
+                        setShowAddMemory(false) //clear memory form and fields
+                        setAddMemoryTitle("");
+                        setAddMemoryDescription("");
+                        setAddMemoryActiveFeeling("");
+                        setAddMemoryImages([]);
+                    }} />
                 </div>
             </div>
         </div>
@@ -261,7 +271,7 @@ Commit 6: Clicking on a Space Marker and rendering a Space sidebar to add memori
                     {feelings.map((feeling, i)=>{
                         return  (
                             <div key = {i} 
-                                className={`border-1 border-sky-400 p-2 text-[12px] rounded-xl ${addMemoryActiveFeeling === feeling ? "bg-sky-400": ""}`}
+                                className={`border-1 border-sky-400 p-2 text-[12px] rounded-xl ${addMemoryActiveFeeling === feeling ? "bg-sky-400": ""} hover:cursor-pointer`}
                                 onClick={() => { setAddMemoryActiveFeeling(feeling) }}
                             >{feeling}</div>)
                     })}
@@ -284,7 +294,7 @@ Commit 6: Clicking on a Space Marker and rendering a Space sidebar to add memori
                     className = "bg-sky-400 p-2 rounded-lg"
                 >
                 </input>
-                <button className = "bg-blue-500 rounded-lg p-2 text-[14px] hover:border-[1px] border-sky-200">Add Memory</button>
+                <button className = "bg-blue-500 rounded-lg p-2 text-[14px] hover:border-[1px] border-sky-200 active:bg-blue-600">Add Memory</button>
             </form>
         </div>
     :null}

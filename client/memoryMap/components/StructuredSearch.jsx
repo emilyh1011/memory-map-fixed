@@ -1,4 +1,4 @@
-import { useState, memo } from 'react';
+import { useState, memo, useEffect } from 'react';
 import axios from 'axios';
 
 const StructuredSearch = memo(function StructuredSearch({activeSearchResult, handleActiveSearchResult, setActiveSearchResult, results, setResults}) {
@@ -12,6 +12,12 @@ const StructuredSearch = memo(function StructuredSearch({activeSearchResult, han
     
 
     const[isSearchBarFocused, setIsSearchBarFocused] = useState(false);
+
+    //On choosing StructuredSearch, reset any possible previous activeSearchResult and searchResults from SimpleSearch
+    useEffect(()=>{
+        setActiveSearchResult()
+        setResults([]);
+    },[]);
     
     function handleStructuredSearch(e) {
         

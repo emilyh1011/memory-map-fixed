@@ -9,9 +9,12 @@ import AddSpacePopup from '../components/AddSpacePopup';
 
 import { IoIosCloseCircle } from "react-icons/io";
 import { MdAddCircleOutline } from "react-icons/md";
+import { IoIosRemoveCircleOutline } from "react-icons/io";
 
 import { DatePicker } from '@mui/x-date-pickers';
 import dayjs from 'dayjs';
+
+import Memories from '../components/Memories'
 
 import "../src/styles.css";
 import 'leaflet/dist/leaflet.css';
@@ -58,9 +61,9 @@ function Map() {
     const [addMemoryActiveFeeling, setAddMemoryActiveFeeling] = useState("");
     const [addMemoryDate, setAddMemoryDate] = useState(null);
     const [addMemoryImages, setAddMemoryImages] = useState([]);
-    
+
     const feelings = ["joy", "ache", "longing", "accepted", "nostalgic", "alive"] //Store our possible feelings options with their unique indexes
-   
+
     //We will call fetchSpaces once on mount and also whenever we add a new space
     function fetchSpaces() {
         axios.get("http://localhost:3000/getAllSpaces").then((response) => {
@@ -122,15 +125,15 @@ function Map() {
         })
     }, [activeSearchResult, userInputName, activeSearchResultPosition, fetchSpaces]);
 
-    function fetchMemories(spaceId){
-        axios.get("http://localhost:3000/getAllMemories", {params: {spaceId}}).then((response)=>{
+    function fetchMemories(spaceId) {
+        axios.get("http://localhost:3000/getAllMemories", { params: { spaceId } }).then((response) => {
             setMemories(response.data);
-        }).catch((err)=>{
+        }).catch((err) => {
             console.log(err);
         })
     }
 
-    function handleAddMemory(event){
+    function handleAddMemory(event) {
         event.preventDefault();
 
         const memoryFormData = new FormData();
@@ -140,18 +143,20 @@ function Map() {
         memoryFormData.append("description", addMemoryDescription);
         memoryFormData.append("spaceId", selectedSpace._id);
 
-        for (let i = 0; i< addMemoryImages.length; i++){
+        for (let i = 0; i < addMemoryImages.length; i++) {
             memoryFormData.append("images", addMemoryImages[i]);
         }
-        
+
         // for (let [key, value] of memoryFormData.entries()) {
         //    console.log(`${key}:`, value);
         // }
 
-        axios.post("http://localhost:3000/addMemory", memoryFormData, 
-            {headers: {
-                "Content-Type": "multipart/form-data",
-            }}).then((response)=>{
+        axios.post("http://localhost:3000/addMemory", memoryFormData,
+            {
+                headers: {
+                    "Content-Type": "multipart/form-data",
+                }
+            }).then((response) => {
                 setShowAddMemory(false);
                 setAddMemoryTitle("");
                 setAddMemoryActiveFeeling("");
@@ -159,7 +164,7 @@ function Map() {
                 setAddMemoryImages([]);
                 console.log("my returned add memory response: ", response.data);
 
-                fetchMemories(selectedSpace._id); 
+                fetchMemories(selectedSpace._id);
                 getUpdatedSpace(selectedSpace._id);
 
             }).catch((err) => {
@@ -167,35 +172,35 @@ function Map() {
             });
     }
 
-    function getUpdatedSpace(spaceId){
-        axios.get("http://localhost:3000/getSpace", {params : {spaceId}}).then((response)=>{
-            
+    function getUpdatedSpace(spaceId) {
+        axios.get("http://localhost:3000/getSpace", { params: { spaceId } }).then((response) => {
+
             const updatedSpace = response.data;
-            
+
             //After we save a memory to the memories collection, the corresponding Space document's lastVisited field may change, so we need to 
             // update that space in our frontend spaces state.
             //Why: If a user closes the SpacePopup after adding a memory to the space and then reopens the same space, we will see the
             // lastVisited field reverted back to the old lastVisited(from b4 the memory was added).
             //This error occurs because our selectedSpace and therefore SpacePopup is rendered based on the spaces state and we didn't update our
             // updatedSpace in the frontend spaces state, so our SpacePopup is rendering the old spaces state with the old Space document.
-            setSpaces((spaces)=>{
-                return spaces.map( space =>
+            setSpaces((spaces) => {
+                return spaces.map(space =>
                     space._id == updatedSpace._id ? updatedSpace : space
                 )
             })
-            
+
             setSelectedSpace(updatedSpace);
 
-        }).catch((err)=>{
+        }).catch((err) => {
             console.log(err);
         })
-    } 
+    }
 
 
     return (
-        <>
+        <div className="w-screen h-screen relative">
 
-            <MapContainer ref={mapRef} center={[40.776676, -73.971321]} zoom={13} className="relative z-0">
+            <MapContainer ref={mapRef} center={[40.776676, -73.971321]} zoom={13} className="absolute top-0 left-0 w-full h-full z-0">
                 <TileLayer
                     attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
                     url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
@@ -217,85 +222,6 @@ function Map() {
                         </Marker>
                     )
                 })}
-
-                {/**Only render the specific space if it exists and closeSpacePopup is false*/}
-                {/**Need to add an error boundaries, where we first check if selectedSpace exists as in not null. 
-                * If it's null, falsy, so shortcircuit false and dont evaluate rest of statement or else error would occur from trying to access selectedSpace when selectedSpace dne*/}
-                {(selectedSpace && !closeSpacePopup) ?
-                    <div className="relative z-[500] flex w-full h-full" >
-                        {/**Put our space Description Popup on the right side of our screen */}
-                        <div className="absolute right-0 flex flex-col w-1/3 h-full justify-center items-center bg-white rounded-lg p-4 gap-4">
-                            {/**Put our x button on top left corner of our popup*/}
-                            <IoIosCloseCircle className="absolute top-1 left-1 text-[20px] text-red-400 hover:cursor-pointer"
-                                onClick={() => {
-                                    setCloseSpacePopup(true);  //Close popup
-                                    setSelectedSpace(null); //On close, reset selectedSpace too
-                                    
-                                    setMemories([]);        //Recent stored memories from that space too, and reset the add memory form, in case if user was in progress of making a memory but didn't submit
-                                    setShowAddMemory(false);
-                                    setAddMemoryTitle("");
-                                    setAddMemoryDescription("");
-                                    setAddMemoryActiveFeeling("");
-                                    setAddMemoryImages([]);
-                                }}
-                            />
-
-                            {/**Header */}
-                            <div className = "flex flex-col items-center w-full gap-4">
-                                <div className = "flex flex-col items-center w-full gap-2">
-                                    <h1 className="text-[30px] font-semibold text-sky-400 text-center">{selectedSpace.name}</h1>
-                                    <span className="text-[12px]">{selectedSpace.display_name}</span>
-                                </div>
-                                
-                                
-                                <div className="flex justify-between items-center w-3/4">
-                                    <span className="text-[15px]">Last Visited: {selectedSpace.lastVisited ? selectedSpace.lastVisited : `N/A, add a memory!`}</span>
-                                    <MdAddCircleOutline className="text-[20px] text-sky-400 font-semibold hover:cursor-pointer"
-                                        onClick={()=>{setShowAddMemory(true)}}/>
-                                </div>
-
-                                {showAddMemory? 
-                                    <div className = "w-full">
-                                        <form className = "flex flex-col bg-gray-100 rounded-lg w-full items-center p-4 gap-5" onSubmit = {handleAddMemory}>
-                                            <input type = "text" 
-                                                value = {addMemoryTitle} 
-                                                placeholder="Add a memory title" 
-                                                onChange = {(event)=>{setAddMemoryTitle(event.target.value)}}
-                                                className = "text-[18px] text-center text-gray-800 focus:outline-none w-full p-2 border-b-2 border-sky-400"></input>
-                                            
-                                            <div className="flex gap-2 justify-center items-center">
-                                                {feelings.map((feeling, i)=>{
-                                                    return  (<div key = {i} className={`border-1 border-sky-400 p-2 text-[12px] rounded-xl ${addMemoryActiveFeeling === feeling ? "bg-sky-400": ""}`}
-                                                    onClick={() => { setAddMemoryActiveFeeling(feeling) }}>{feeling}</div>)
-                                                })}
-                                            </div>
-
-                                            <DatePicker label="Memory Date" 
-                                                onChange = {(date)=>{setAddMemoryDate(date); console.log("prev date: ", addMemoryDate)}}/>
-                                            
-                                            <textarea type = "text" 
-                                                value = {addMemoryDescription} 
-                                                placeholder="Add a memory description" 
-                                                onChange = {(event)=>{setAddMemoryDescription(event.target.value)}}
-                                                className = "h-50 text-[12px] text-gray-800 w-full focus:outline-none w-full border-2 border-sky-400 rounded-lg p-2">
-                                            </textarea>
-                                            <input type = "file" 
-                                                name = "image" 
-                                                multiple = {true}
-                                                onChange = {(event)=>{setAddMemoryImages(event.target.files)}} className = "bg-sky-400 p-2 rounded-lg"></input>
-                                            <button className = "bg-blue-500 rounded-lg p-2 text-[14px] hover:border-[1px] border-sky-200">Add Memory</button>
-                                        </form>
-                                        
-                                    </div>
-                                :null}
-
-                            </div>
-
-
-
-                        </div>
-                    </div>
-                    : null}
 
                 {/**User selected a search result && the search result isn't already a space.
                  * AddSpace Popup with a Preview Marker*/}
@@ -320,6 +246,95 @@ function Map() {
                 }
 
             </MapContainer>
+
+            <div className="z-[500]">
+                {/**Only render the specific space if it exists and closeSpacePopup is false*/}
+                {(selectedSpace && !closeSpacePopup) ?
+
+                    <div className="absolute right-0 flex flex-col w-1/3 h-full max-h-screen items-center bg-white rounded-lg p-4 gap-4 overflow-y-auto z-[501]">
+
+                        {/**Put our x button on top left corner of our popup*/}
+                        <IoIosCloseCircle className="absolute top-1 left-1 text-[20px] text-red-400 hover:cursor-pointer"
+                            onClick={() => {
+                                setCloseSpacePopup(true);  //Close popup
+                                setSelectedSpace(null); //On close, reset selectedSpace too
+
+                                setMemories([]);        //Recent stored memories from that space too, and reset the add memory form, in case if user was in progress of making a memory but didn't submit
+                                setShowAddMemory(false);
+                                setAddMemoryTitle("");
+                                setAddMemoryDescription("");
+                                setAddMemoryActiveFeeling("");
+                                setAddMemoryImages([]);
+                            }}
+                        />
+
+                        {/**Header */}
+                        <div className="flex flex-col items-center w-full gap-4">
+                            <div className="flex flex-col items-center w-full gap-2">
+                                <h1 className="text-[30px] font-semibold text-sky-400 text-center">{selectedSpace.name}</h1>
+                                <span className="text-[12px]">{selectedSpace.display_name}</span>
+                            </div>
+
+
+                            <div className="flex justify-between items-center w-3/4">
+                                <span className="text-[15px]">Last Visited: {selectedSpace.lastVisited ? selectedSpace.lastVisited : `N/A, add a memory!`}</span>
+                                <MdAddCircleOutline className={`text-[20px] text-sky-400 font-semibold hover:cursor-pointer ${showAddMemory ? 'hidden' : ''}`}
+                                    onClick={() => { setShowAddMemory(true) }} />
+                                <IoIosRemoveCircleOutline className={`text-[20px] text-sky-400 font-semibold hover:cursor-pointer ${showAddMemory ? '' : 'hidden'}`}
+                                    onClick={() => {
+                                        setShowAddMemory(false) //clear memory form and fields
+                                        setAddMemoryTitle("");
+                                        setAddMemoryDescription("");
+                                        setAddMemoryActiveFeeling("");
+                                        setAddMemoryImages([]);
+                                    }} />
+                            </div>
+
+                            {showAddMemory ?
+                                <div className="w-full">
+                                    <form className="flex flex-col bg-slate-100 rounded-lg w-full items-center p-4 gap-5" onSubmit={handleAddMemory}>
+                                        <input type="text"
+                                            value={addMemoryTitle}
+                                            placeholder="Add a memory title"
+                                            onChange={(event) => { setAddMemoryTitle(event.target.value) }}
+                                            className="text-[18px] text-center text-gray-800 focus:outline-none w-full p-2 border-b-2 border-sky-400"></input>
+
+                                        <div className="flex gap-2 justify-center items-center">
+                                            {feelings.map((feeling, i) => {
+                                                return (<div key={i} className={`border-1 border-sky-400 p-2 text-[12px] rounded-xl ${addMemoryActiveFeeling === feeling ? "bg-sky-400" : ""} hover:cursor-pointer`}
+                                                    onClick={() => { setAddMemoryActiveFeeling(feeling) }}>{feeling}</div>)
+                                            })}
+                                        </div>
+
+                                        <DatePicker label="Memory Date"
+                                            onChange={(date) => { setAddMemoryDate(date); console.log("prev date: ", addMemoryDate) }} />
+
+                                        <textarea type="text"
+                                            value={addMemoryDescription}
+                                            placeholder="Add a memory description"
+                                            onChange={(event) => { setAddMemoryDescription(event.target.value) }}
+                                            className="h-50 text-[12px] text-gray-800 w-full focus:outline-none w-full border-2 border-sky-400 rounded-lg p-2">
+                                        </textarea>
+                                        <input type="file"
+                                            name="image"
+                                            multiple={true}
+                                            onChange={(event) => { setAddMemoryImages(event.target.files) }} className="bg-sky-400 p-2 rounded-lg"></input>
+                                        <button className="bg-blue-500 rounded-lg p-2 text-[14px] hover:border-[1px] border-sky-200 cursor-pointer active:bg-blue-600">Add Memory</button>
+                                    </form>
+
+                                </div>
+                                : null}
+
+                            {memories != [] ?
+                                <Memories memories={memories} /> : ""
+                            }
+
+                        </div>
+
+                    </div>
+
+                    : null}
+            </div>
 
             {/**Selections for search is mutually exclusive. For each checkbox click, only need to handle case if not checked.
              * Because if the checkbox checked && clicked, we don't want to remove the selection.
@@ -363,12 +378,11 @@ function Map() {
             </div>
 
 
-        </>
+        </div>
     )
 }
 export default Map;
 
 //Collection of spaces
 //Space: memories, lastVisited
-// Memory: feeling, description, pictures
-//Feeling options: joy, ache, accepted, love, alive, nostalgic/the feeling that u know u will miss this moment
+// Memory: title, feeling, description, pictures
