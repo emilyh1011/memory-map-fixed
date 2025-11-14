@@ -99,7 +99,7 @@ app.get("/search-bar", async (req, res) => {
     try {
         const response = await fetch(url, {
             headers: {
-                'User-Agent': 'SpacesMemoryMap/1.0 (you@example.com)',
+                'User-Agent': 'SpacesMemoryMap/1.0',
                 'Accept': 'application/json',
             }
         });
