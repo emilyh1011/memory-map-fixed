@@ -67,7 +67,8 @@ function Map() {
 
     //Decide our backend link, are we running on our local machine or are we on Render(deployed version)
     const backendLink = import.meta.env.MODE === "production" ? import.meta.env.VITE_BACKEND_PROD_URL : import.meta.env.VITE_BACKEND_URL;
-    //console.log("backend link", backendLink);
+    console.log("mode we are in", import.meta.env.MODE);
+    console.log("backend link", backendLink);
 
     //We will call fetchSpaces once on mount and also whenever we add a new space
     function fetchSpaces() {
