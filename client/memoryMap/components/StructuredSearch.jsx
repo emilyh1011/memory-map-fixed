@@ -10,6 +10,8 @@ const StructuredSearch = memo(function StructuredSearch({activeSearchResult, han
     const [country, setCountry] = useState("");
     const [postalcode, setPostalcode] = useState("");
     
+    const backendLink = import.meta.env.MODE === "production" ? import.meta.env.VITE_BACKEND_PROD_URL : import.meta.env.VITE_BACKEND_URL;
+
 
     const[isSearchBarFocused, setIsSearchBarFocused] = useState(false);
 
@@ -24,7 +26,7 @@ const StructuredSearch = memo(function StructuredSearch({activeSearchResult, han
         e.preventDefault();
         setResults([]);
         setActiveSearchResult(null);
-        axios.get("http://localhost:3000/search-bar", { params: { street, city, county, state, country, postalcode } }).then((response) => {
+        axios.get(`${backendLink}/search-bar`, { params: { street, city, county, state, country, postalcode } }).then((response) => {
             console.log(response.data);
             setResults(response.data);
         }).catch((err) => {

@@ -13,6 +13,8 @@ const SimpleSearch = memo(function SimpleSearch({activeSearchResult, handleActiv
         setResults([]);
     },[]);
 
+    const backendLink = import.meta.env.MODE === "production" ? import.meta.env.VITE_BACKEND_PROD_URL : import.meta.env.VITE_BACKEND_URL;
+
     async function handleSearch(e) {
 
         e.preventDefault(); //Prevent default action of page reloading after form submission
@@ -24,7 +26,7 @@ const SimpleSearch = memo(function SimpleSearch({activeSearchResult, handleActiv
         if (simpleQuery.trim() !== "") {
             //axios.get: has an optional second parameter for passing in a params object. In the backend, our params object will be accessed as req.query.
             //Params object: expects an object; We need to wrap our simpleQuery variable into an object
-            axios.get("http://localhost:3000/search-bar", { params: { simpleQuery } }).then((response) => {
+            axios.get(`${backendLink}/search-bar`, { params: { simpleQuery } }).then((response) => {
                 console.log(response);
                 console.log(response.data);
                 setResults(response.data);
