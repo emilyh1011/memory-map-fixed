@@ -22,6 +22,7 @@ import axios from 'axios';
 import pin from '../src/assets/pin.png';
 import { Icon } from 'leaflet'
 
+
 function Map() {
 
     const mapRef = useRef(null);
@@ -64,9 +65,13 @@ function Map() {
 
     const feelings = ["joy", "ache", "longing", "accepted", "nostalgic", "alive"] //Store our possible feelings options with their unique indexes
 
+    //Decide our backend link, are we running on our local machine or are we on Render(deployed version)
+    const backendLink = import.meta.env.MODE === "production" ? import.meta.env.VITE_BACKEND_PROD_URL : import.meta.env.VITE_BACKEND_URL;
+    //console.log("backend link", backendLink);
+
     //We will call fetchSpaces once on mount and also whenever we add a new space
     function fetchSpaces() {
-        axios.get("http://localhost:3000/getAllSpaces").then((response) => {
+        axios.get(`${backendLink}/getAllSpaces`).then((response) => {
             console.log("this is our spaces from frontend: ", response.data);
             setSpaces(response.data);
         }).catch((err) => {
@@ -102,7 +107,7 @@ function Map() {
     }
 
     const handleAddSpace = useCallback(() => {
-        axios.post("http://localhost:3000/addSpace", {
+        axios.post(`${backendLink}/addSpace`, {
             display_name: activeSearchResult.display_name,
             name: activeSearchResult.name || userInputName.trim(),
             latitude: activeSearchResultPosition[0],
@@ -126,7 +131,7 @@ function Map() {
     }, [activeSearchResult, userInputName, activeSearchResultPosition, fetchSpaces]);
 
     function fetchMemories(spaceId) {
-        axios.get("http://localhost:3000/getAllMemories", { params: { spaceId } }).then((response) => {
+        axios.get(`${backendLink}/getAllMemories`, { params: { spaceId } }).then((response) => {
             setMemories(response.data);
         }).catch((err) => {
             console.log(err);
@@ -151,7 +156,7 @@ function Map() {
         //    console.log(`${key}:`, value);
         // }
 
-        axios.post("http://localhost:3000/addMemory", memoryFormData,
+        axios.post(`${backendLink}/addMemory`, memoryFormData,
             {
                 headers: {
                     "Content-Type": "multipart/form-data",
@@ -173,7 +178,7 @@ function Map() {
     }
 
     function getUpdatedSpace(spaceId) {
-        axios.get("http://localhost:3000/getSpace", { params: { spaceId } }).then((response) => {
+        axios.get(`${backendLink}/getSpace`, { params: { spaceId } }).then((response) => {
 
             const updatedSpace = response.data;
 
