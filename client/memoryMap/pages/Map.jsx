@@ -20,6 +20,7 @@ import "../src/styles.css";
 import 'leaflet/dist/leaflet.css';
 import axios from 'axios';
 import pin from '../src/assets/pin.png';
+import existingPin from '../src/assets/map-pin.png';
 import { Icon } from 'leaflet'
 
 
@@ -48,6 +49,14 @@ function Map() {
         attribution: <a href="https://www.flaticon.com/free-icons/location" title="location icons">Location icons created by Vitaly Gorbachev - Flaticon</a>
     });
 
+    const existingIcon = new Icon ({
+        iconUrl: existingPin,
+        iconSize: [38, 38],
+        attribution: <a href="https://www.flaticon.com/free-icons/map-pin" title="map pin icons">Map pin icons created by Anggara - Flaticon</a>
+     }
+
+    );
+
     const [userInputName, setUserInputName] = useState(""); //If user needs to add a name for an empty string activeSearchResult.name
     const [askLocationName, setAskLocationName] = useState(false); //Keeps track of if we need to display/hide the UI for asking for a location name
 
@@ -69,6 +78,11 @@ function Map() {
     const backendLink = import.meta.env.MODE === "production" ? import.meta.env.VITE_BACKEND_PROD_URL : import.meta.env.VITE_BACKEND_URL;
     console.log("mode we are in", import.meta.env.MODE);
     console.log("backend link", backendLink);
+
+    //Fix Leaflet Marker icons not rendering on builds
+
+
+
 
     //We will call fetchSpaces once on mount and also whenever we add a new space
     function fetchSpaces() {
@@ -215,7 +229,7 @@ function Map() {
                 {/**Existing spaces*/}
                 {spaces.map((space) => {
                     return (
-                        <Marker position={[space.latitude, space.longitude]} key={space.place_id}
+                        <Marker icon={existingIcon} position={[space.latitude, space.longitude]} key={space.place_id}
                             eventHandlers={{
                                 click: () => {
                                     mapRef.current.panTo([space.latitude, space.longitude], 15);
