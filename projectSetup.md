@@ -10,6 +10,7 @@
     - Start backend server
         - cd server
         - node app.mjs
+        - npm start **in step 7 we will implement this nodemon start**
 
 4. In client/memoryMap folder, install react-router-dom, install tailwindcss, install axios(for calling our api endpoints)
     - npm install react-router-dom
