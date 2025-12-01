@@ -1,5 +1,9 @@
 # Memory Map
 
+## Overview
+An interactive memory map of spaces. I come back to this online scrapbook whenever I want to remember how I felt in a space.
+https://memory-map-frontend.onrender.com/
+
 Technologies: React, Vite, TailwindCSS, Express, MongoDB, AXIOS
 
 Map libraries: leaflet, react leaflet
@@ -12,23 +16,21 @@ Date Picker Library: mui x react-date-picker
 
 Photo Carousel Library: Swiperjs
 
-for a description and demos, check: https://iamemilyhan.notion.site/projects-experiences
-
-https://memory-map-frontend.onrender.com/
+For more, check: https://iamemilyhan.notion.site/projects-experiences
 
 ## Terminology
 
-Space: A location added by the user. Represented with a visual marker on the map.
+**Space**: A location added by the user. Represented with a visual marker on the map.
 
-Memory: A memory at a space. A memory contains a title, feeling, description, and optional photos. Memories can only be added to existing spaces.
+**Memory**: A memory at a space. A memory contains a title, feeling, description, and optional photos. Memories can only be added to existing spaces.
 
 ## Data Model
 
 The application will store Spaces and Memories
 
-* users can post multiple letters
-* each letter will have a comment section where users post multiple comments
-* each comment will reference a letter object with its _id field, linking it to a specific letter
+* users can add multiple spaces
+* each space will have store memories, where users can post memories of feeling.
+* each memory will reference a space object with its _id field, linking it to a specific space
 
 An Example Space:
 ```javascript
