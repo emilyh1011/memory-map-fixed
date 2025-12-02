@@ -4,6 +4,8 @@
 An interactive memory map of spaces. I come back to this online scrapbook whenever I want to remember how I felt in a space.
 https://memory-map-frontend.onrender.com/
 
+![Example](./photos/hePicked2Pears.png)
+
 Technologies: React, Vite, TailwindCSS, Express, MongoDB, AXIOS
 
 Map libraries: leaflet, react leaflet
